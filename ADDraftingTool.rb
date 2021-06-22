@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 require 'nokogiri'
 require 'rest-client'
 
@@ -32,3 +33,7 @@ document.xpath("//tr").each do |row|
 end
 
 puts parsed_ability_statistics
+=======
+puts "test"
+puts "I can push"
+>>>>>>> 41d200d210c714cafa4a83e02addbd21d64327c7
