@@ -1,3 +1,4 @@
+require 'erb'
 require 'nokogiri'
 require 'rest-client'
 
@@ -74,3 +75,18 @@ def retrieve_ability_pair_statistics
 
     return parsed_ability_pair_statistics
 end
+
+# Generates the interactive HTML file to be used by the user during AD draft.
+def generate_webpage
+    output_filename = "ADWebpage.html"
+    output_filepath = "#{__dir__}/#{output_filename}"
+    
+    File.delete(output_filepath) if File.exist?(output_filepath) 
+
+    erb = ERB.new(File.open("#{__dir__}/ADWebpageTemplate.html.erb").read)
+    File.write(output_filepath, erb.result)
+end
+
+ability_statistics = retrieve_ability_statistics
+ability_pair_statistics = retrieve_ability_pair_statistics
+generate_webpage
