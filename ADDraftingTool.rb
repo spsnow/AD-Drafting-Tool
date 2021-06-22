@@ -1,4 +1,5 @@
 require 'erb'
+require 'json'
 require 'nokogiri'
 require 'rest-client'
 
@@ -26,8 +27,8 @@ def retrieve_ability_statistics
         ability_win_rate_data = row.xpath("td[4]")
         
         parsed_ability_image_location = ability_image_location_data.to_s.match(/.*src="(.*)"><\/td>/)[1]
-        parsed_ability_name = ability_name_data.to_s.match(/<td>.*">(.*)<\/a><\/td>/)[1]
-        parsed_ability_win_rate = ability_win_rate_data.to_s.match(/<td.*">(.*)%<\/td>/)[1]
+        parsed_ability_name = ability_name_data.to_s.gsub(/'/, "").match(/<td>.*">(.*)<\/a><\/td>/)[1]
+        parsed_ability_win_rate = ability_win_rate_data.to_s.match(/<td.*">(.*)%<\/td>/)[1].to_f
 
         parsed_ability_statistics[parsed_ability_name] = {
             name: parsed_ability_name,
@@ -62,9 +63,9 @@ def retrieve_ability_pair_statistics
         ability_two_name_data = row.xpath("td[5]")
         ability_pair_win_rate_data = row.xpath("td[8]")
 
-        parsed_ability_one_name = ability_one_name_data.to_s.gsub(/\n/, "").match(/<td>(.*)<\/td>/)[1]
-        parsed_ability_two_name = ability_two_name_data.to_s.gsub(/\n/, "").match(/<td>(.*)<\/td>/)[1]
-        parsed_ability_pair_win_rate = ability_pair_win_rate_data.to_s.gsub(/\n/, "").match(/<td.*">(.*)%<\/td>/)[1]
+        parsed_ability_one_name = ability_one_name_data.to_s.gsub(/[\n']/, "").match(/<td>(.*)<\/td>/)[1]
+        parsed_ability_two_name = ability_two_name_data.to_s.gsub(/[\n']/, "").match(/<td>(.*)<\/td>/)[1]
+        parsed_ability_pair_win_rate = ability_pair_win_rate_data.to_s.gsub(/\n/, "").match(/<td.*">(.*)%<\/td>/)[1].to_f
 
         parsed_ability_pair_statistics.push({
             ability_one_name: parsed_ability_one_name,
@@ -77,16 +78,42 @@ def retrieve_ability_pair_statistics
 end
 
 # Generates the interactive HTML file to be used by the user during AD draft.
-def generate_webpage
+def generate_webpage(abilities_on_board, ability_statistics, ability_pair_statistics)
     output_filename = "ADWebpage.html"
     output_filepath = "#{__dir__}/#{output_filename}"
     
     File.delete(output_filepath) if File.exist?(output_filepath) 
 
     erb = ERB.new(File.open("#{__dir__}/ADWebpageTemplate.html.erb").read)
-    File.write(output_filepath, erb.result)
+
+    template_variables = binding
+    template_variables.local_variable_set(:abilities_on_board, abilities_on_board)
+    template_variables.local_variable_set(:ability_statistics, ability_statistics)
+    template_variables.local_variable_set(:ability_pair_statistics, ability_pair_statistics)
+
+    File.write(output_filepath, erb.result(template_variables))
 end
+
+# TODO: Replace with OpenCV code that retrieves the player's starting position and the abilities on the draft board.
+# For now this has example data for webpage development.
+abilities_on_board = {
+    ultimates: ["Mystic Flare", "Coup de Grace", "Life Drain", "Assassinate", "Reincarnation", "Magnetize", "Solar Guardian", "Astral Step",  "Nether Strike", "Spirit Form", "Sunder", "Life Break"],
+    spells: [
+        "Arcane Bolt", "Concussive Shot", "Ancient Seal",
+        "Boulder Smash", "Rolling Boulder", "Mist Coil",
+        "Stifling Dagger", "Blink Strike", "Blur",
+        "Wraithfire Blast", "Vampiric Spirit", "Mortal Strike",
+        "Nether Blast", "Decrepify", "Nether Ward",
+        "Shrapnel", "Headshot", "Take Aim",
+        "Starbreaker", "Celestial Hammer", "Luminosity",
+        "Inner Fire", "Burning Spear", "Berserkers Blood",
+        "Aether Remnant", "Dissimilate", "Resonant Pulse",
+        "Reflection", "Conjure Image", "Metamorphosis",
+        "Charge of Darkness", "Bulldoze", "Greater Bash",
+        "Illuminate", "Solar Bind", "Chakra Magic"
+    ]
+}
 
 ability_statistics = retrieve_ability_statistics
 ability_pair_statistics = retrieve_ability_pair_statistics
-generate_webpage
+generate_webpage(abilities_on_board, ability_statistics, ability_pair_statistics)

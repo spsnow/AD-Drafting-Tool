@@ -1,1 +1,45 @@
-<%= Time.now %>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<link type="text/css" rel="stylesheet" href="ADWebpage.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+    var abilities_on_board = JSON.parse('<%= abilities_on_board.to_json %>');
+    var ability_statistics = JSON.parse('<%= ability_statistics.to_json %>');
+    var ability_pair_statistics = JSON.parse('<%= ability_pair_statistics.to_json %>');
+
+    var unchosen_abilities = { 'ultimates': [], 'spells': [] };
+    abilities_on_board['ultimates'].forEach(element => unchosen_abilities['ultimates'].push([element, ability_statistics[element]["win_rate"]]));
+    abilities_on_board['spells'].forEach(element => unchosen_abilities['spells'].push([element, ability_statistics[element]["win_rate"]]));
+
+    function updateStrongestAbilities(unchosen_abilities) {
+        var all_unchosen_abilities = unchosen_abilities['ultimates'].concat(unchosen_abilities['spells']);
+        all_unchosen_abilities.sort(function(a, b) { return b[1] - a[1] });
+        $("#strongest-abilities-images").empty();
+     
+        for(var i = 0; i < Math.min(all_unchosen_abilities.length, 12); i++) {
+            $("#strongest-abilities-images").append(
+                "<div class='col-md-auto strogest-abilities-image-container'>" + 
+                "<img class='strongest-ability-image' src='" + ability_statistics[all_unchosen_abilities[i][0]]['image_location'] + "'>" + 
+                "<p>" + ability_statistics[all_unchosen_abilities[i][0]]['win_rate'] + "%</p>" + 
+                "</div>"
+            );
+        }
+    }
+
+    $(document).ready(function() {
+        updateStrongestAbilities(unchosen_abilities);
+    });
+</script>
+
+<div class="container-fluid">
+    <div id="strongest-abilities" class="container-fluid">
+        <label>Strongest Abilities:</label>
+        <div id="strongest-abilities-images" class="row"></div>
+    </div>
+    <div id="strongest-abilities-with-synergy">
+        <label>Strongest Abilities w/ Synergy:</label>
+    </div>
+    <div id="strongest-ability-pairs">
+        <label>Strongest Ability Pairs:</label>
+    </div>
+</div>
