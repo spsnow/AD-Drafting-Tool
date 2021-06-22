@@ -7,3 +7,18 @@
     padding-left: 6px;
     padding-right: 6px;
 }
+
+.high-win-rate {
+    -webkit-text-stroke: 0.25px black;
+    color: #328327;
+}
+
+.medium-win-rate {
+    -webkit-text-stroke: 0.25px black;
+    color: #fff23D;
+}
+
+.low-win-rate {
+    -webkit-text-stroke: 0.25px black;
+    color: #D44949;
+}
